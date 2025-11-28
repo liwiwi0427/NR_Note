@@ -14,29 +14,31 @@
 <div class="container">
     <h1>🏥 護理記錄產生器</h1>
 
+    <!-- 第一區：選擇處置項目 -->
     <div class="form-group">
         <div class="section-title">Step 1: 選擇項目</div>
         <div class="row">
             <select id="mainSelect" onchange="updateCategory()">
-                <option value="">主處置...</option>
+                <option value="">(1) 主處置...</option>
             </select>
             <select id="catSelect" onchange="updateSubCategory()" disabled>
-                <option value="">分類...</option>
+                <option value="">(2) 分類...</option>
             </select>
         </div>
         <div style="margin-top: 15px;">
             <select id="subSelect" onchange="renderVariables()" disabled>
-                <option value="">詳細內容...</option>
+                <option value="">(3) 詳細內容...</option>
             </select>
         </div>
     </div>
 
-    <!-- 動態變數區 (預設隱藏) -->
+    <!-- 第二區：動態輸入變數 (預設隱藏) -->
     <div id="variableArea" style="display:none;">
-        <div class="section-title">Step 2: 填寫數據</div>
+        <div class="section-title">Step 2: 填寫詳細數據</div>
         <div id="dynamicInputs"></div>
     </div>
 
+    <!-- 第三區：結果預覽 -->
     <div class="form-group">
         <div class="section-title">Step 3: 預覽與修改</div>
         <textarea id="resultArea" placeholder="系統將自動生成記錄..."></textarea>
@@ -45,9 +47,62 @@
     <button class="btn-primary" onclick="copyText()">📋 複製到剪貼簿</button>
 </div>
 
+<!-- 吐司通知 (複製成功提示) -->
 <div id="toast" class="toast">✅ 已複製成功！</div>
 
 <script>
+    // 讀取 database.js 中的資料
+    const data = window.nursingData || {};
+
+    const mainSelect = document.getElementById('mainSelect');
+    const catSelect = document.getElementById('catSelect');
+    const subSelect = document.getElementById('subSelect');
+    const variableArea = document.getElementById('variableArea');
+    const dynamicInputs = document.getElementById('dynamicInputs');
+    const resultArea = document.getElementById('resultArea');
+    
+    let currentTemplate = "";
+
+    // 1. 初始化頁面，載入第一層選單
+    Object.keys(data).forEach(key => {
+        mainSelect.add(new Option(key, key));
+    });
+
+    // 2. 第一層改變 -> 更新第二層
+    function updateCategory() {
+        catSelect.innerHTML = '<option value="">(2) 分類...</option>';
+        subSelect.innerHTML = '<option value="">(3) 詳細內容...</option>';
+        catSelect.disabled = true;
+        subSelect.disabled = true;
+        variableArea.style.display = 'none';
+        resultArea.value = '';
+        
+        if (mainSelect.value && data[mainSelect.value]) {
+            catSelect.disabled = false;
+            Object.keys(data[mainSelect.value]).forEach(key => {
+                catSelect.add(new Option(key, key));
+            });
+        }
+    }
+
+    // 3. 第二層改變 -> 更新第三層
+    function updateSubCategory() {
+        subSelect.innerHTML = '<option value="">(3) 詳細內容...</option>';
+        subSelect.disabled = true;
+        variableArea.style.display = 'none';
+        resultArea.value = '';
+
+        if (mainSelect.value && catSelect.value) {
+            subSelect.disabled = false;
+            const items = data[mainSelect.value][catSelect.value];
+            Object.keys(items).forEach(key => {
+                // value 存模板內容, text 存顯示名稱
+                subSelect.add(new Option(key, items[key]));
+            });
+        }
+    }
+
+    // 4. 第三層改變 -> 解析變數 {{...}}
     function renderVariables() {
         dynamicInputs.innerHTML = '';
         currentTemplate = subSelect.value;
@@ -58,13 +113,13 @@
             return;
         }
 
-        // 1. 抓取所有 {{...}} 內容
+        // Regex 抓取所有 {{...}}
         const regex = /{{(.*?)}}/g;
         let match;
-        const vars = new Set(); // 用 Set 避免重複抓取相同變數
+        const vars = new Set();
         
         while ((match = regex.exec(currentTemplate)) !== null) {
-            vars.add(match[1]); // match[1] 會抓到 "顏色|紅|黃" 這樣的完整字串
+            vars.add(match[1]); // 抓取括號內的完整字串，如 "顏色|紅|黃"
         }
 
         if (vars.size > 0) {
@@ -74,27 +129,27 @@
                 const div = document.createElement('div');
                 div.style.marginBottom = "15px";
 
-                // 2. 判斷是否有 '|' 符號
+                // 判斷是否包含 '|' 符號 (下拉選單模式)
                 if (tagContent.includes('|')) {
                     // === 下拉選單模式 ===
                     const parts = tagContent.split('|');
-                    const labelName = parts[0]; // 第一個是標題
-                    const options = parts.slice(1); // 剩下的是選項
+                    const labelName = parts[0]; // 第一段是標題
+                    const options = parts.slice(1); // 後面是選項
 
                     let label = document.createElement('label');
-                    label.innerText = labelName;
+                    label.innerText = labelName + " :";
                     
                     let select = document.createElement('select');
                     select.dataset.originalTag = tagContent; // 記住原始標籤以便替換
-                    select.onchange = generateText; // 改變時觸發更新
+                    select.onchange = generateText; // 選項改變時即時更新
 
-                    // 加入一個預設提示選項
+                    // 預設提示選項
                     let defaultOpt = document.createElement('option');
-                    defaultOpt.text = `(請選擇${labelName})`;
-                    defaultOpt.value = ""; 
-                    // defaultOpt.selected = true; // 預設選中
+                    defaultOpt.text = `(請選擇 ${labelName})`;
+                    defaultOpt.value = "";
                     select.appendChild(defaultOpt);
 
+                    // 加入選項
                     options.forEach(optText => {
                         let option = document.createElement('option');
                         option.value = optText;
@@ -106,15 +161,15 @@
                     div.appendChild(select);
 
                 } else {
-                    // === 原本的文字輸入框模式 ===
+                    // === 一般文字輸入框模式 ===
                     let label = document.createElement('label');
-                    label.innerText = tagContent;
+                    label.innerText = tagContent + " :";
                     
                     let input = document.createElement('input');
                     input.type = "text";
                     input.dataset.originalTag = tagContent; // 記住原始標籤
-                    input.placeholder = "輸入" + tagContent + "...";
-                    input.oninput = generateText;
+                    input.placeholder = "輸入 " + tagContent + "...";
+                    input.oninput = generateText; // 輸入時即時更新
 
                     div.appendChild(label);
                     div.appendChild(input);
@@ -123,7 +178,7 @@
                 dynamicInputs.appendChild(div);
             });
             
-            // 如果只有文字框，自動聚焦第一個
+            // 自動聚焦第一個輸入框 (如果是 input)
             const firstInput = dynamicInputs.querySelector('input');
             if (firstInput) setTimeout(() => firstInput.focus(), 100);
 
@@ -132,6 +187,7 @@
         }
     }
 
+    // 5. 產生最終文字
     function generateText() {
         let text = currentTemplate;
         
@@ -139,13 +195,12 @@
         const inputs = dynamicInputs.querySelectorAll('input, select');
         
         inputs.forEach(el => {
-            const originalTag = el.dataset.originalTag; // 取得 "顏色|紅|黃"
+            const originalTag = el.dataset.originalTag; // 例如: "顏色|紅|黃" 或 "Size"
             const val = el.value;
 
-            // 如果使用者有輸入或選擇，就進行替換
+            // 只有當使用者有輸入或選擇時才替換
             if (val) {
-                // 使用 replaceAll 確保重複出現的變數都會被換掉
-                // 我們要替換的是整個 {{顏色|紅|黃}}
+                // 使用 replaceAll 處理重複出現的變數
                 text = text.split(`{{${originalTag}}}`).join(val);
             }
         });
@@ -153,21 +208,17 @@
         resultArea.value = text;
     }
 
-    // ...後面 copyText 等其他函式維持原樣...
-2. 如何在資料庫 (database.js) 中使用？
-現在你可以去修改你的 database.js，加入選項了。
-範例：
-code
-JavaScript
-window.nursingData = {
-    "管路處置": {
-        "Foley": {
-            "一般置入": "導尿管置入，規格：{{Size}} Fr，材質：{{材質|矽膠|橡膠}}，尿液顏色：{{顏色|淡黃|茶色|血色}}，性質：{{性質|澄清|混濁}}。"
-        }
-    },
-    "評估": {
-        "意識": {
-            "GCS": "意識狀態：E {{E|4|3|2|1}} V {{V|5|4|3|2|1|T}} M {{M|6|5|4|3|2|1}}，瞳孔反射：{{瞳孔|++/++|+-/+-|--/--}}。"
-        }
+    // 6. 複製功能
+    function copyText() {
+        const text = resultArea.value;
+        if (!text) return;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        });
     }
-};
+</script>
+</body>
+</html>
