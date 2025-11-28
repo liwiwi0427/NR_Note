@@ -4,59 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>護理記錄後台管理</title>
+    <!-- 引入樣式與資料庫 -->
     <link rel="stylesheet" href="style.css">
     <script src="database.js"></script>
-    <style>
-        /* 避免與舊樣式衝突的微調 */
-        body { margin: 0; padding: 0; background-color: #f0f2f5; display: block; }
-        input, textarea { background: #f8fafc; border: 1px solid #e2e8f0; }
-        input:focus, textarea:focus { background: #fff; border-color: var(--primary); }
-    </style>
 </head>
 <body>
 
 <div class="admin-wrapper">
     
-    <!-- 左側側邊欄 -->
+    <!-- 左側：深色側邊欄 -->
     <div class="sidebar-panel">
         <div class="sidebar-header">
-            <div class="sidebar-title">🩺 Admin</div>
-            <button class="mini-btn" title="新增主處置" onclick="openModal('main')" style="width:30px; height:30px; font-size:16px;">＋</button>
+            <div class="sidebar-title">🩺 資料庫管理</div>
+            <!-- 新增主處置按鈕 -->
+            <button class="mini-btn" title="新增主處置" onclick="openModal('main')" style="width:30px; height:30px; font-size:18px;">＋</button>
         </div>
         
+        <!-- 樹狀選單容器 -->
         <div class="sidebar-content" id="sidebarTree">
-            <!-- JS 將會產生樹狀圖 -->
+            <!-- JS 會自動生成內容 -->
         </div>
         
         <div style="padding: 15px; font-size: 12px; text-align: center; color: #64748b; border-top: 1px solid #334155;">
-            v2.0 Dashboard
+            Nursing Note Admin v2.0
         </div>
     </div>
 
-    <!-- 右側內容區 -->
+    <!-- 右側：主要操作區 -->
     <div class="main-content">
         
-        <!-- 空白狀態 (一開始顯示) -->
+        <!-- 狀態 1: 空白起始畫面 -->
         <div id="emptyState" class="empty-state">
             <div class="empty-icon">👈</div>
-            <h2>請從左側選擇一個項目</h2>
-            <p>點擊左側選單的「＋」可新增類別</p>
+            <h2>請從左側選擇項目進行編輯</h2>
+            <p>點擊分類旁的「＋」號可新增內容</p>
         </div>
 
-        <!-- 編輯卡片 (選中項目後顯示) -->
+        <!-- 狀態 2: 編輯卡片 -->
         <div id="editorCard" class="editor-card">
             <div class="editor-header">
                 <div>
                     <div class="breadcrumb" id="breadcrumbPath">Main > Category</div>
-                    <div class="editor-title" id="editorTitle">Foley Insert</div>
+                    <div class="editor-title" id="editorTitle">Title</div>
                 </div>
-                <button class="btn-secondary" style="background:#fee2e2; color:#ef4444;" onclick="deleteItem()">🗑️ 刪除</button>
+                <button class="btn-danger" onclick="deleteItem()">🗑️ 刪除此項</button>
             </div>
 
-            <div class="form-group">
-                <label>內容模版 (Content Template)</label>
-                <textarea id="editorContent" style="height: 250px; font-size: 16px; line-height: 1.6;"></textarea>
-                <div class="hint">💡 提示：輸入 {{變數}} 可自動產生填空欄位。例如：{{Size}}</div>
+            <div class="form-group" style="margin-bottom:20px;">
+                <label>內容模版 (Template)</label>
+                <textarea id="editorContent" style="height: 300px; font-size: 16px; line-height: 1.6;"></textarea>
+                <div class="hint">💡 提示：使用 {{變數名稱}} 來建立填空欄位。例如：{{Size}}、{{顏色}}</div>
             </div>
 
             <button class="btn-primary" onclick="saveCurrentItem()">💾 暫存修改</button>
@@ -64,27 +61,27 @@
 
     </div>
 
-    <!-- 浮動下載按鈕 -->
+    <!-- 浮動下載按鈕 (FAB) -->
     <button class="fab-save" onclick="downloadDB()">
-        📥 下載更新檔案
+        📥 下載並覆蓋檔案
     </button>
 
 </div>
 
-<!-- 新增用的 Modal -->
-<div id="modalOverlay" class="modal modal-overlay">
+<!-- 新增功能的彈窗 (Modal) -->
+<div id="modalOverlay" class="modal-overlay">
     <div class="modal-box">
         <h3 id="modalTitle" style="color:var(--text-main); margin-top:0;">新增項目</h3>
         
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:15px;">
             <label>名稱 (Key Name)</label>
-            <input type="text" id="newKeyInput" placeholder="例如: 困難置入">
+            <input type="text" id="newKeyInput" placeholder="請輸入名稱...">
         </div>
 
-        <!-- 只有第三層才顯示內容輸入 -->
-        <div class="form-group" id="newContentGroup" style="display:none;">
+        <!-- 只有第三層才顯示內容輸入框 -->
+        <div class="form-group" id="newContentGroup" style="display:none; margin-bottom:15px;">
             <label>預設內容</label>
-            <textarea id="newContentInput" style="height:100px;"></textarea>
+            <textarea id="newContentInput" style="height:100px;" placeholder="輸入護理記錄內容..."></textarea>
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
@@ -98,62 +95,68 @@
 <div id="toast" class="toast">操作成功</div>
 
 <script>
+    // 載入資料庫，若無則初始化為空物件
     let db = window.nursingData || {};
-    let currentPath = []; // [Main, Cat, Item]
     
-    // 新增狀態變數
+    // 當前選取的路徑 [主處置, 分類, 項目]
+    let currentPath = []; 
+    
+    // 新增狀態暫存
     let addState = {
         level: '', // 'main', 'cat', 'item'
         parentPath: []
     };
 
+    // DOM 元素參考
     const treeContainer = document.getElementById('sidebarTree');
     const emptyState = document.getElementById('emptyState');
     const editorCard = document.getElementById('editorCard');
     const modalOverlay = document.getElementById('modalOverlay');
 
-    // --- 核心：渲染左側樹狀圖 ---
+    // ==========================================
+    // 1. 渲染樹狀選單 (Core Logic)
+    // ==========================================
     function renderTree() {
         treeContainer.innerHTML = '';
         
-        // 1. 遍歷 Main
+        // 第一層：主處置 (Main)
         Object.keys(db).forEach(mainKey => {
-            // Main Node
-            let mainDiv = createNodeElement(mainKey, 'level-1', ['main', mainKey]);
+            let mainDiv = createNodeElement(mainKey, 'level-1');
             
-            // Add Button for Main (Add Category)
-            let addCatBtn = document.createElement('button');
-            addCatBtn.className = 'mini-btn';
-            addCatBtn.innerHTML = '＋';
-            addCatBtn.title = '新增分類';
-            addCatBtn.onclick = (e) => { e.stopPropagation(); openModal('cat', [mainKey]); };
-            mainDiv.querySelector('.node-actions').appendChild(addCatBtn);
+            // 加入 "新增分類" 按鈕
+            addActionBtn(mainDiv, '＋', '新增分類', (e) => {
+                e.stopPropagation();
+                openModal('cat', [mainKey]);
+            });
             
             treeContainer.appendChild(mainDiv);
 
-            // 2. 遍歷 Category
+            // 第二層：分類 (Category)
             const cats = db[mainKey];
             Object.keys(cats).forEach(catKey => {
-                let catDiv = createNodeElement(catKey, 'level-2', ['cat', mainKey, catKey]);
+                let catDiv = createNodeElement(catKey, 'level-2');
                 
-                // Add Button for Cat (Add Item)
-                let addItemBtn = document.createElement('button');
-                addItemBtn.className = 'mini-btn';
-                addItemBtn.innerHTML = '＋';
-                addItemBtn.title = '新增內容';
-                addItemBtn.onclick = (e) => { e.stopPropagation(); openModal('item', [mainKey, catKey]); };
-                catDiv.querySelector('.node-actions').appendChild(addItemBtn);
+                // 加入 "新增內容" 按鈕
+                addActionBtn(catDiv, '＋', '新增內容', (e) => {
+                    e.stopPropagation();
+                    openModal('item', [mainKey, catKey]);
+                });
 
                 treeContainer.appendChild(catDiv);
 
-                // 3. 遍歷 Items
+                // 第三層：項目 (Item)
                 const items = cats[catKey];
                 Object.keys(items).forEach(itemKey => {
-                    let itemDiv = createNodeElement(itemKey, 'level-3', ['item', mainKey, catKey, itemKey]);
+                    let itemDiv = createNodeElement(itemKey, 'level-3');
+                    
+                    // 點擊事件：選取編輯
                     itemDiv.onclick = () => selectItem(mainKey, catKey, itemKey);
                     
-                    // Highlight active
-                    if(currentPath[2] === itemKey && currentPath[1] === catKey) {
+                    // 高亮顯示目前選取的項目
+                    if(currentPath.length === 3 && 
+                       currentPath[0] === mainKey && 
+                       currentPath[1] === catKey && 
+                       currentPath[2] === itemKey) {
                         itemDiv.classList.add('active');
                     }
 
@@ -163,37 +166,47 @@
         });
     }
 
-    // 建立節點 DOM 的輔助函式
-    function createNodeElement(text, levelClass, meta) {
+    // 建立節點 HTML 的輔助函式
+    function createNodeElement(text, levelClass) {
         let div = document.createElement('div');
         div.className = `tree-node ${levelClass}`;
-        div.innerHTML = `
-            <span>${text}</span>
-            <div class="node-actions"></div>
-        `;
+        div.innerHTML = `<span>${text}</span><div class="node-actions"></div>`;
         return div;
     }
 
-    // --- 選取項目 ---
+    // 加入操作按鈕的輔助函式
+    function addActionBtn(node, text, title, onClick) {
+        let btn = document.createElement('button');
+        btn.className = 'mini-btn';
+        btn.innerHTML = text;
+        btn.title = title;
+        btn.onclick = onClick;
+        node.querySelector('.node-actions').appendChild(btn);
+    }
+
+    // ==========================================
+    // 2. 編輯與選取功能
+    // ==========================================
     function selectItem(main, cat, item) {
         currentPath = [main, cat, item];
-        renderTree(); // 重繪以更新高亮
         
+        // 更新 UI 狀態
+        renderTree(); 
         emptyState.style.display = 'none';
         editorCard.style.display = 'block';
 
+        // 填入資料
         document.getElementById('breadcrumbPath').innerText = `${main} > ${cat}`;
         document.getElementById('editorTitle').innerText = item;
         document.getElementById('editorContent').value = db[main][cat][item];
     }
 
-    // --- 修改與儲存 ---
     function saveCurrentItem() {
         if(currentPath.length !== 3) return;
         const [main, cat, item] = currentPath;
-        const newContent = document.getElementById('editorContent').value;
         
-        db[main][cat][item] = newContent;
+        // 更新記憶體中的資料
+        db[main][cat][item] = document.getElementById('editorContent').value;
         showToast("✅ 已暫存修改");
     }
 
@@ -201,8 +214,10 @@
         if(currentPath.length !== 3) return;
         const [main, cat, item] = currentPath;
         
-        if(confirm(`確定要刪除「${item}」嗎？`)) {
+        if(confirm(`確定要刪除「${item}」嗎？\n(注意：此動作需下載存檔後才算真正完成)`)) {
             delete db[main][cat][item];
+            
+            // 重置狀態
             currentPath = [];
             editorCard.style.display = 'none';
             emptyState.style.display = 'block';
@@ -211,18 +226,23 @@
         }
     }
 
-    // --- 新增功能 (Modal) ---
+    // ==========================================
+    // 3. 新增功能 (Modal)
+    // ==========================================
     function openModal(level, parentPath = []) {
         addState.level = level;
         addState.parentPath = parentPath;
         
+        // 清空並設定 Modal 內容
         document.getElementById('newKeyInput').value = '';
         document.getElementById('newContentInput').value = '';
-        document.getElementById('modalTitle').innerText = 
-            level === 'main' ? '新增主處置' :
-            level === 'cat' ? `在 [${parentPath[0]}] 下新增分類` :
-            `在 [${parentPath[1]}] 下新增內容`;
-            
+        
+        let title = '';
+        if (level === 'main') title = '新增主處置';
+        else if (level === 'cat') title = `在 [${parentPath[0]}] 下新增分類`;
+        else title = `在 [${parentPath[1]}] 下新增內容`;
+        
+        document.getElementById('modalTitle').innerText = title;
         document.getElementById('newContentGroup').style.display = (level === 'item') ? 'block' : 'none';
         
         modalOverlay.classList.add('show');
@@ -235,8 +255,9 @@
 
     function confirmAdd() {
         const key = document.getElementById('newKeyInput').value.trim();
-        if(!key) return alert("名稱不能為空");
+        if(!key) { alert("請輸入名稱！"); return; }
 
+        // 根據層級新增資料結構
         if(addState.level === 'main') {
             if(!db[key]) db[key] = {};
         } 
@@ -255,9 +276,13 @@
         showToast("✨ 新增成功");
     }
 
-    // --- 下載檔案 ---
+    // ==========================================
+    // 4. 匯出下載功能
+    // ==========================================
     function downloadDB() {
+        // 將 JSON 轉回 JavaScript 檔案字串
         const content = `window.nursingData = ${JSON.stringify(db, null, 4)};`;
+        
         const blob = new Blob([content], { type: "text/javascript" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -266,9 +291,12 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
         showToast("⬇️ 檔案已下載，請覆蓋原檔");
     }
 
+    // 顯示提示訊息
     function showToast(msg) {
         const t = document.getElementById('toast');
         t.innerText = msg;
@@ -276,6 +304,7 @@
         setTimeout(() => t.classList.remove('show'), 2000);
     }
 
+    // 初始化
     window.onload = renderTree;
 </script>
 
