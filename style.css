@@ -230,116 +230,185 @@ button {
     transform: translateX(-50%) translateY(0);
 }
 /* =========================================
-   Admin 後台專用樣式
+   Admin 後台專用樣式 (Dashboard Version)
    ========================================= */
-.admin-layout {
-    display: grid;
-    grid-template-columns: 280px 1fr; /* 左側選單固定寬度，右側自適應 */
-    gap: 20px;
-    height: 85vh; /* 讓介面佔滿視窗高度 */
+
+/* 全螢幕佈局 */
+.admin-wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background-color: #f0f2f5;
+    overflow: hidden;
+    position: fixed; /* 固定視窗，避免瀏覽器捲軸 */
+    top: 0;
+    left: 0;
 }
 
-/* 左側：樹狀選單區 */
-.sidebar {
-    background: #fff;
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    padding: 15px;
-    overflow-y: auto; /* 內容多時可捲動 */
-}
-
-/* 樹狀結構設計 */
-details {
-    margin-bottom: 5px;
-}
-summary {
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 5px;
-    list-style: none; /* 隱藏預設三角形 */
-    font-weight: bold;
-    color: var(--primary-dark);
-    transition: background 0.2s;
-    position: relative;
-}
-summary:hover {
-    background-color: #e0f2f1;
-}
-/* 自訂展開圖示 */
-summary::before {
-    content: '▶'; 
-    font-size: 10px;
-    margin-right: 8px;
-    display: inline-block;
-    transition: transform 0.2s;
-}
-details[open] > summary::before {
-    transform: rotate(90deg);
-}
-
-/* 第三層：具體項目 */
-.tree-item {
-    padding: 8px 10px 8px 30px; /* 縮排 */
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--text-main);
-    border-radius: 5px;
-    display: block;
-}
-.tree-item:hover {
-    background-color: #f5f5f5;
-    color: var(--primary);
-}
-.tree-item.active {
-    background-color: var(--primary);
-    color: white;
-}
-
-/* 右側：編輯區 */
-.editor-panel {
-    background: #fff;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+/* --- 左側：深色側邊欄 --- */
+.sidebar-panel {
+    width: 300px;
+    background-color: #1e293b; /* 深藍灰 */
+    color: #cbd5e1;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    border-right: 1px solid #334155;
+    flex-shrink: 0;
 }
 
-.panel-header {
+.sidebar-header {
+    padding: 20px;
+    background-color: #0f172a; /* 更深的標題底色 */
+    border-bottom: 1px solid #334155;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid var(--bg-color);
-    padding-bottom: 15px;
-    margin-bottom: 20px;
 }
 
-.btn-group {
-    display: flex;
-    gap: 10px;
+.sidebar-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    letter-spacing: 1px;
 }
-.btn-sm {
-    padding: 8px 12px;
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+/* 樹狀選單樣式 */
+.tree-node {
+    padding: 8px 15px;
+    cursor: pointer;
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+    user-select: none;
+    position: relative;
 }
-.btn-delete {
-    background-color: #e74c3c;
-    color: white;
-}
-.btn-delete:hover { background-color: #c0392b; }
 
-/* Modal 彈窗 (新增用) */
-.modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 999;
-    visibility: hidden; opacity: 0;
-    transition: 0.3s;
+.tree-node:hover {
+    background-color: #334155;
+    color: #fff;
 }
-.modal.show { visibility: visible; opacity: 1; }
-.modal-content {
-    background: white; padding: 25px; border-radius: 10px; width: 400px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+.tree-node.active {
+    background-color: var(--primary); /* 使用主色 */
+    color: white;
+    border-left: 4px solid #fff;
+}
+
+/* 層級縮排 */
+.level-1 { padding-left: 20px; font-weight: bold; color: #fff; background: rgba(255,255,255,0.05); margin-bottom: 2px;}
+.level-2 { padding-left: 35px; color: #94a3b8; }
+.level-3 { padding-left: 50px; color: #cbd5e1; }
+.level-3::before { content: '📄'; margin-right: 8px; font-size: 12px; opacity: 0.7;}
+
+/* 節點右側的小操作按鈕 (隱藏，Hover時顯示) */
+.node-actions {
+    margin-left: auto;
+    display: none;
+    gap: 5px;
+}
+.tree-node:hover .node-actions { display: flex; }
+
+.mini-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.mini-btn:hover { background: var(--accent); }
+
+/* --- 右側：主要編輯區 --- */
+.main-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.editor-card {
+    background: white;
+    width: 100%;
+    max-width: 800px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    padding: 40px;
+    display: none; /* 預設隱藏，點擊後顯示 */
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 20px;
+}
+
+.breadcrumb {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 5px;
+}
+
+.editor-title {
+    font-size: 24px;
+    color: var(--text-main);
+    font-weight: 800;
+}
+
+/* 空白狀態 */
+.empty-state {
+    text-align: center;
+    color: #94a3b8;
+    margin-top: 100px;
+}
+.empty-icon { font-size: 60px; margin-bottom: 20px; opacity: 0.5; }
+
+/* 底部浮動下載按鈕 */
+.fab-save {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: var(--accent);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(244, 81, 30, 0.4);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    border: none;
+    z-index: 100;
+}
+.fab-save:hover { transform: scale(1.05); background-color: #d84315;}
+
+/* Modal 美化 */
+.modal-overlay {
+    background: rgba(15, 23, 42, 0.6); /* 深藍透明 */
+    backdrop-filter: blur(4px); /* 磨砂玻璃特效 */
+}
+.modal-box {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 450px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
