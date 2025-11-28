@@ -3,171 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>護理記錄產生器</title>
-    <!-- 引入資料庫 -->
+    <title>護理記錄快手</title>
+    <!-- 1. 引入樣式表 -->
+    <link rel="stylesheet" href="style.css">
+    <!-- 2. 引入資料庫 -->
     <script src="database.js"></script>
-    <style>
-        :root {
-            --primary: #008080; /* 醫療綠 */
-            --primary-dark: #005f5f;
-            --bg: #f0f4f8;
-            --card-bg: #ffffff;
-            --text: #333;
-        }
-        body {
-            font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        .container {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 700px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        h1 {
-            color: var(--primary);
-            text-align: center;
-            margin: 0 0 10px 0;
-            font-size: 24px;
-        }
-        .section-title {
-            font-size: 14px;
-            color: #666;
-            font-weight: 600;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        select, input, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-            background: #fff;
-            transition: border 0.3s;
-        }
-        select:focus, input:focus, textarea:focus {
-            border-color: var(--primary);
-            outline: none;
-        }
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        /* 變數輸入區 */
-        #variableArea {
-            background-color: #e6f2f2;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 5px solid var(--primary);
-            display: none; /* 預設隱藏 */
-        }
-        .var-group {
-            margin-bottom: 10px;
-        }
-        .var-group label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 4px;
-            color: var(--primary-dark);
-            font-weight: bold;
-        }
-        textarea {
-            height: 120px;
-            resize: vertical;
-            font-family: Consolas, "Courier New", monospace;
-            line-height: 1.5;
-        }
-        .btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-        }
-        .btn:hover {
-            background-color: var(--primary-dark);
-        }
-        .btn:active {
-            transform: scale(0.98);
-        }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-        .toast.show {
-            opacity: 1;
-        }
-    </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🏥 護理記錄快手</h1>
+    <h1>🏥 護理記錄產生器</h1>
 
-    <div>
-        <div class="section-title">選擇處置類別</div>
+    <div class="form-group">
+        <div class="section-title">Step 1: 選擇項目</div>
         <div class="row">
             <select id="mainSelect" onchange="updateCategory()">
-                <option value="">(1) 主項目...</option>
+                <option value="">主處置...</option>
             </select>
             <select id="catSelect" onchange="updateSubCategory()" disabled>
-                <option value="">(2) 分類...</option>
+                <option value="">分類...</option>
             </select>
         </div>
         <div style="margin-top: 15px;">
             <select id="subSelect" onchange="renderVariables()" disabled>
-                <option value="">(3) 詳細內容...</option>
+                <option value="">詳細內容...</option>
             </select>
         </div>
     </div>
 
-    <!-- 動態變數區 -->
-    <div id="variableArea">
+    <!-- 動態變數區 (預設隱藏) -->
+    <div id="variableArea" style="display:none;">
+        <div class="section-title">Step 2: 填寫數據</div>
         <div id="dynamicInputs"></div>
     </div>
 
-    <div>
-        <div class="section-title">預覽與編輯</div>
-        <textarea id="resultArea" placeholder="生成的記錄將顯示於此..."></textarea>
+    <div class="form-group">
+        <div class="section-title">Step 3: 預覽與修改</div>
+        <textarea id="resultArea" placeholder="系統將自動生成記錄..."></textarea>
     </div>
 
-    <button class="btn" onclick="copyText()">複製記錄 (Copy)</button>
+    <button class="btn-primary" onclick="copyText()">📋 複製到剪貼簿</button>
 </div>
 
-<div id="toast" class="toast">已複製到剪貼簿！</div>
+<div id="toast" class="toast">✅ 已複製成功！</div>
 
 <script>
-    // 讀取 database.js 中的資料
+    /* 這裡的邏輯不變，維持原本的功能 */
     const data = window.nursingData || {};
-
     const mainSelect = document.getElementById('mainSelect');
     const catSelect = document.getElementById('catSelect');
     const subSelect = document.getElementById('subSelect');
@@ -176,44 +58,32 @@
     const resultArea = document.getElementById('resultArea');
     let currentTemplate = "";
 
-    // 初始化第一層
-    Object.keys(data).forEach(key => {
-        mainSelect.add(new Option(key, key));
-    });
+    Object.keys(data).forEach(key => mainSelect.add(new Option(key, key)));
 
     function updateCategory() {
-        catSelect.innerHTML = '<option value="">(2) 分類...</option>';
-        subSelect.innerHTML = '<option value="">(3) 詳細內容...</option>';
+        catSelect.innerHTML = '<option value="">分類...</option>';
+        subSelect.innerHTML = '<option value="">詳細內容...</option>';
         catSelect.disabled = true;
         subSelect.disabled = true;
         variableArea.style.display = 'none';
         resultArea.value = '';
         
-        const mainVal = mainSelect.value;
-        if (mainVal && data[mainVal]) {
+        if (mainSelect.value && data[mainSelect.value]) {
             catSelect.disabled = false;
-            Object.keys(data[mainVal]).forEach(key => {
-                catSelect.add(new Option(key, key));
-            });
+            Object.keys(data[mainSelect.value]).forEach(key => catSelect.add(new Option(key, key)));
         }
     }
 
     function updateSubCategory() {
-        subSelect.innerHTML = '<option value="">(3) 詳細內容...</option>';
+        subSelect.innerHTML = '<option value="">詳細內容...</option>';
         subSelect.disabled = true;
         variableArea.style.display = 'none';
         resultArea.value = '';
 
-        const mainVal = mainSelect.value;
-        const catVal = catSelect.value;
-
-        if (mainVal && catVal && data[mainVal][catVal]) {
+        if (mainSelect.value && catSelect.value) {
             subSelect.disabled = false;
-            const items = data[mainVal][catVal];
-            Object.keys(items).forEach(key => {
-                // value 存模板，text 存標題
-                subSelect.add(new Option(key, items[key]));
-            });
+            const items = data[mainSelect.value][catSelect.value];
+            Object.keys(items).forEach(key => subSelect.add(new Option(key, items[key])));
         }
     }
 
@@ -227,26 +97,19 @@
             return;
         }
 
-        // 解析 {{變數}}
         const regex = /{{(.*?)}}/g;
         let match;
         const vars = new Set();
-        while ((match = regex.exec(currentTemplate)) !== null) {
-            vars.add(match[1]);
-        }
+        while ((match = regex.exec(currentTemplate)) !== null) vars.add(match[1]);
 
         if (vars.size > 0) {
             variableArea.style.display = 'block';
             vars.forEach(v => {
                 const div = document.createElement('div');
-                div.className = 'var-group';
-                div.innerHTML = `
-                    <label>${v}</label>
-                    <input type="text" data-var="${v}" placeholder="輸入${v}..." oninput="generateText()">
-                `;
+                div.style.marginBottom = "10px";
+                div.innerHTML = `<label>${v}</label><input type="text" data-var="${v}" placeholder="輸入${v}..." oninput="generateText()">`;
                 dynamicInputs.appendChild(div);
             });
-            // 自動聚焦第一個輸入框
             setTimeout(() => dynamicInputs.querySelector('input').focus(), 100);
         } else {
             variableArea.style.display = 'none';
@@ -255,13 +118,8 @@
 
     function generateText() {
         let text = currentTemplate;
-        const inputs = dynamicInputs.querySelectorAll('input');
-        inputs.forEach(input => {
-            const key = input.dataset.var;
-            const val = input.value;
-            if (val) {
-                text = text.split(`{{${key}}}`).join(val);
-            }
+        dynamicInputs.querySelectorAll('input').forEach(input => {
+            if (input.value) text = text.split(`{{${input.dataset.var}}}`).join(input.value);
         });
         resultArea.value = text;
     }
@@ -269,7 +127,6 @@
     function copyText() {
         const text = resultArea.value;
         if (!text) return;
-        
         navigator.clipboard.writeText(text).then(() => {
             const toast = document.getElementById('toast');
             toast.classList.add('show');
