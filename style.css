@@ -1,17 +1,32 @@
-/* =========================================
-   全域設定 (Global)
-   ========================================= */
+/* ==========================================================================
+   1. 全域變數與基礎設定 (Variables & Reset)
+   ========================================================================== */
 :root {
-    /* 醫療配色方案 */
-    --primary: #00897b;       /* 主色：湖水綠 (專業、冷靜) */
-    --primary-dark: #005f56;  /* 深綠色 (按鈕互動用) */
-    --secondary: #546e7a;     /* 次要色：藍灰色 (文字、標題) */
-    --accent: #f4511e;        /* 強調色：橘紅色 (用於重要操作，如匯出) */
-    --bg-color: #f0f2f5;      /* 背景色：淺灰 (護眼) */
-    --card-bg: #ffffff;       /* 卡片背景：純白 */
-    --border: #cfd8dc;        /* 邊框顏色 */
-    --text-main: #263238;     /* 主要文字 */
-    --text-light: #78909c;    /* 次要文字 */
+    /* 🎨 配色方案 (Medical Teal Theme) */
+    --primary: #00897b;        /* 主色：專業湖水綠 */
+    --primary-dark: #00695c;   /* 深綠：Hover 狀態 */
+    --primary-light: #e0f2f1;  /* 淺綠：背景點綴 */
+    
+    --accent: #f4511e;         /* 強調色：橘紅 (用於存檔/重要操作) */
+    
+    --bg-color: #f1f5f9;       /* 網頁背景：淡灰藍 (護眼) */
+    --card-bg: #ffffff;        /* 卡片背景：純白 */
+    --border-color: #cbd5e1;   /* 邊框顏色 */
+    
+    --text-main: #1e293b;      /* 主要文字：深藍灰 */
+    --text-light: #64748b;     /* 次要文字：淺灰 */
+    
+    --sidebar-bg: #1e293b;     /* 後台側邊欄背景 */
+    --sidebar-hover: #334155;  /* 後台側邊欄 Hover */
+
+    /* 📐 尺寸與圓角 */
+    --radius: 10px;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
@@ -19,236 +34,235 @@ body {
     background-color: var(--bg-color);
     color: var(--text-main);
     margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    min-height: 100vh;
-    box-sizing: border-box;
+    padding: 0;
+    line-height: 1.5;
 }
 
-/* =========================================
-   卡片容器 (Container)
-   ========================================= */
+/* ==========================================================================
+   2. 通用元件 (Components)
+   ========================================================================== */
+
+/* --- 標題 Typography --- */
+h1, h2, h3 {
+    margin: 0 0 15px 0;
+    font-weight: 700;
+    color: var(--text-main);
+}
+.section-title, label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* --- 輸入框與選單 (Inputs) --- */
+input[type="text"], select, textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 16px;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+    color: var(--text-main);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.15);
+}
+
+textarea {
+    font-family: Consolas, "Courier New", monospace; /* 等寬字方便對齊 */
+    resize: vertical;
+    line-height: 1.6;
+}
+
+select:disabled {
+    background-color: #e2e8f0;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* 提示小字 */
+.hint {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 6px;
+}
+
+/* --- 按鈕 (Buttons) --- */
+button {
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-size: 16px;
+    font-weight: 600;
+    width: 100%;
+    box-shadow: var(--shadow);
+}
+.btn-primary:hover { background-color: var(--primary-dark); }
+
+.btn-secondary {
+    background-color: #e2e8f0;
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+}
+.btn-secondary:hover { background-color: #cbd5e1; }
+
+.btn-danger {
+    background-color: #fee2e2;
+    color: #ef4444;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    font-weight: 600;
+}
+.btn-danger:hover { background-color: #fecaca; }
+
+/* 小按鈕 (用於樹狀選單) */
+.mini-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+.mini-btn:hover { background: var(--accent); }
+
+/* --- 吐司通知 (Toast) --- */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1e293b;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* --- 彈窗 (Modal) --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+    opacity: 0; visibility: hidden;
+    transition: all 0.3s;
+}
+.modal-overlay.show { opacity: 1; visibility: visible; }
+
+.modal-box {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: var(--shadow-lg);
+    transform: scale(0.95);
+    transition: transform 0.3s;
+}
+.modal-overlay.show .modal-box { transform: scale(1); }
+
+
+/* ==========================================================================
+   3. 前台樣式 (index.html) - 使用者產生器
+   ========================================================================== */
 .container {
     background: var(--card-bg);
     width: 100%;
-    max-width: 720px; /* 稍微加寬 */
+    max-width: 700px;
+    margin: 40px auto;
     border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* 柔和陰影 */
-    padding: 35px;
+    box-shadow: var(--shadow-lg);
+    padding: 40px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    transition: transform 0.3s ease;
+    gap: 25px;
 }
 
-/* 標題樣式 */
-h1, h2 {
+.container h1 {
     text-align: center;
     color: var(--primary);
-    margin: 0 0 10px 0;
-    letter-spacing: 1px;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
 }
 
-h2 {
-    border-bottom: 2px solid var(--bg-color);
-    padding-bottom: 15px;
-    font-size: 1.5rem;
-}
-
-/* 小標題 */
-.section-title, label {
-    font-size: 0.9rem;
-    color: var(--secondary);
-    font-weight: 700;
-    margin-bottom: 8px;
-    display: block;
-    text-transform: uppercase; /* 全大寫 */
-    letter-spacing: 0.5px;
-}
-
-/* =========================================
-   表單元件 (Forms)
-   ========================================= */
-.form-group {
-    margin-bottom: 20px;
-}
-
-/* 讓兩個輸入框並排的排版 */
+/* 讓兩個選單並排 */
 .row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
 
-/* 輸入框與下拉選單 */
-select, input[type="text"], textarea {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    font-size: 16px;
-    color: var(--text-main);
-    background-color: #fafafa;
-    box-sizing: border-box;
-    transition: all 0.3s ease;
-}
-
-/* 輸入框被選取時的特效 */
-select:focus, input:focus, textarea:focus {
-    border-color: var(--primary);
-    background-color: #fff;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.1);
-}
-
-select:disabled {
-    background-color: #eeeeee;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-textarea {
-    font-family: Consolas, "Courier New", monospace; /* 等寬字體方便看對齊 */
-    line-height: 1.6;
-    min-height: 120px;
-    resize: vertical;
-}
-
-/* 提示文字 */
-.hint {
-    font-size: 13px;
-    color: var(--text-light);
-    margin-top: 5px;
-}
-
-/* =========================================
-   特殊區域：變數輸入區 (Variable Area)
-   ========================================= */
+/* 變數輸入區塊 */
 #variableArea {
-    background-color: rgba(0, 137, 123, 0.05); /* 極淡的綠色背景 */
+    background-color: var(--primary-light);
     padding: 20px;
-    border-radius: 10px;
+    border-radius: var(--radius);
     border-left: 5px solid var(--primary);
-    margin-top: 10px;
+    animation: fadeIn 0.3s ease;
 }
 
-/* =========================================
-   特殊區域：預覽程式碼區 (Code Preview)
-   ========================================= */
-.preview-box {
-    background: #263238; /* 深色背景 */
-    color: #eceff1;
-    padding: 15px;
-    border-radius: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-    font-family: monospace;
-    font-size: 13px;
-    border: 1px solid var(--secondary);
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* =========================================
-   按鈕 (Buttons)
-   ========================================= */
-button {
-    border: none;
-    padding: 14px 20px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px; /* 圖示跟文字的距離 */
-}
 
-/* 主要操作按鈕 (複製) */
-.btn-primary {
-    background-color: var(--primary);
-    color: white;
-    width: 100%;
-    font-size: 1.1rem;
-    box-shadow: 0 4px 6px rgba(0, 137, 123, 0.2);
-}
-.btn-primary:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-1px);
-}
-.btn-primary:active {
-    transform: translateY(1px);
-}
-
-/* 次要操作按鈕 (新增暫存) */
-.btn-secondary {
-    background-color: var(--secondary);
-    color: white;
-    width: auto;
-    margin-top: 10px;
-}
-.btn-secondary:hover {
-    background-color: #455a64;
-}
-
-/* 危險/重要按鈕 (匯出存檔) */
-.btn-danger {
-    background-color: var(--accent);
-    color: white;
-    width: 100%;
-    margin-top: 20px;
-    box-shadow: 0 4px 6px rgba(244, 81, 30, 0.2);
-}
-.btn-danger:hover {
-    background-color: #d84315;
-}
-
-/* =========================================
-   吐司通知 (Toast Notification)
-   ========================================= */
-.toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px); /* 預設往下藏 */
-    background: rgba(38, 50, 56, 0.9);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 50px;
-    font-size: 14px;
-    opacity: 0;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
-/* =========================================
-   Admin 後台專用樣式 (Dashboard Version)
-   ========================================= */
-
-/* 全螢幕佈局 */
+/* ==========================================================================
+   4. 後台樣式 (admin.html) - 儀表板
+   ========================================================================== */
 .admin-wrapper {
     display: flex;
     height: 100vh;
     width: 100vw;
-    background-color: #f0f2f5;
+    background-color: var(--bg-color);
     overflow: hidden;
-    position: fixed; /* 固定視窗，避免瀏覽器捲軸 */
-    top: 0;
-    left: 0;
 }
 
-/* --- 左側：深色側邊欄 --- */
+/* --- 左側側邊欄 --- */
 .sidebar-panel {
-    width: 300px;
-    background-color: #1e293b; /* 深藍灰 */
+    width: 280px;
+    background-color: var(--sidebar-bg);
     color: #cbd5e1;
     display: flex;
     flex-direction: column;
@@ -258,157 +272,107 @@ button {
 
 .sidebar-header {
     padding: 20px;
-    background-color: #0f172a; /* 更深的標題底色 */
+    background-color: #0f172a;
     border-bottom: 1px solid #334155;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-
-.sidebar-title {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #fff;
-    letter-spacing: 1px;
-}
+.sidebar-title { font-size: 1.2rem; font-weight: 700; color: white; letter-spacing: 1px; }
 
 .sidebar-content {
     flex: 1;
     overflow-y: auto;
     padding: 10px 0;
 }
+/* 自訂捲軸樣式 (Chrome/Safari) */
+.sidebar-content::-webkit-scrollbar { width: 6px; }
+.sidebar-content::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
 
-/* 樹狀選單樣式 */
+/* 樹狀節點 */
 .tree-node {
-    padding: 8px 15px;
+    padding: 10px 15px;
     cursor: pointer;
     font-size: 14px;
     display: flex;
     align-items: center;
-    transition: all 0.2s;
+    justify-content: space-between; /* 讓文字靠左，按鈕靠右 */
+    transition: background 0.2s;
     user-select: none;
-    position: relative;
 }
+.tree-node:hover { background-color: var(--sidebar-hover); color: white; }
+.tree-node.active { background-color: var(--primary); color: white; border-left: 4px solid #fff; }
 
-.tree-node:hover {
-    background-color: #334155;
-    color: #fff;
-}
-
-.tree-node.active {
-    background-color: var(--primary); /* 使用主色 */
-    color: white;
-    border-left: 4px solid #fff;
-}
-
-/* 層級縮排 */
-.level-1 { padding-left: 20px; font-weight: bold; color: #fff; background: rgba(255,255,255,0.05); margin-bottom: 2px;}
-.level-2 { padding-left: 35px; color: #94a3b8; }
-.level-3 { padding-left: 50px; color: #cbd5e1; }
-.level-3::before { content: '📄'; margin-right: 8px; font-size: 12px; opacity: 0.7;}
-
-/* 節點右側的小操作按鈕 (隱藏，Hover時顯示) */
-.node-actions {
-    margin-left: auto;
-    display: none;
-    gap: 5px;
-}
+/* 節點操作區 (Hover才顯示) */
+.node-actions { display: none; gap: 5px; }
 .tree-node:hover .node-actions { display: flex; }
 
-.mini-btn {
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: white;
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-.mini-btn:hover { background: var(--accent); }
+/* 層級縮排 */
+.level-1 { padding-left: 20px; font-weight: 700; color: #fff; margin-top: 5px; }
+.level-2 { padding-left: 35px; color: #94a3b8; font-size: 13px; }
+.level-3 { padding-left: 50px; color: #cbd5e1; }
+.level-3::before { content: '📄'; margin-right: 6px; font-size: 10px; opacity: 0.7; }
 
-/* --- 右側：主要編輯區 --- */
+/* --- 右側編輯區 --- */
 .main-content {
     flex: 1;
-    padding: 40px;
+    padding: 30px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
+/* 編輯卡片 */
 .editor-card {
     background: white;
     width: 100%;
-    max-width: 800px;
+    max-width: 850px;
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    box-shadow: var(--shadow);
     padding: 40px;
-    display: none; /* 預設隱藏，點擊後顯示 */
+    display: none;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .editor-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 30px;
-    border-bottom: 2px solid #f1f5f9;
+    margin-bottom: 20px;
     padding-bottom: 20px;
+    border-bottom: 1px solid var(--bg-color);
 }
-
-.breadcrumb {
-    font-size: 14px;
-    color: var(--text-light);
-    margin-bottom: 5px;
-}
-
-.editor-title {
-    font-size: 24px;
-    color: var(--text-main);
-    font-weight: 800;
-}
+.breadcrumb { font-size: 12px; color: var(--text-light); margin-bottom: 4px; }
+.editor-title { font-size: 1.5rem; color: var(--text-main); font-weight: 800; }
 
 /* 空白狀態 */
-.empty-state {
-    text-align: center;
-    color: #94a3b8;
-    margin-top: 100px;
-}
-.empty-icon { font-size: 60px; margin-bottom: 20px; opacity: 0.5; }
+.empty-state { text-align: center; color: var(--text-light); margin-top: 10vh; }
+.empty-icon { font-size: 4rem; opacity: 0.3; margin-bottom: 20px; }
 
-/* 底部浮動下載按鈕 */
+/* 浮動下載按鈕 (FAB) */
 .fab-save {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
+    bottom: 40px;
+    right: 40px;
     background-color: var(--accent);
     color: white;
-    padding: 15px 25px;
+    padding: 15px 30px;
     border-radius: 50px;
-    box-shadow: 0 4px 15px rgba(244, 81, 30, 0.4);
-    font-weight: bold;
+    box-shadow: 0 10px 20px rgba(244, 81, 30, 0.4);
+    font-weight: 700;
+    font-size: 16px;
     display: flex;
     align-items: center;
     gap: 10px;
-    cursor: pointer;
-    transition: transform 0.2s;
-    border: none;
     z-index: 100;
+    transition: transform 0.2s, background 0.2s;
+    border: none;
 }
-.fab-save:hover { transform: scale(1.05); background-color: #d84315;}
-
-/* Modal 美化 */
-.modal-overlay {
-    background: rgba(15, 23, 42, 0.6); /* 深藍透明 */
-    backdrop-filter: blur(4px); /* 磨砂玻璃特效 */
-}
-.modal-box {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    width: 450px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
+.fab-save:hover { transform: translateY(-3px); background-color: #d84315; }
+.fab-save:active { transform: translateY(0); }
